@@ -41,6 +41,18 @@
         [(null? set2) '()]
         [else (I set1)]))))
 
+(intersect '(tomatoes and macaroni)
+           '(macaroni and cheese))
+
+
+#|
+(define intersectall
+  (lambda (lset)
+    (cond
+      [(null? (cdr lset)) (car lset)]
+      [else (intersect (car lset)
+                       (intersectall (cdr lset)))])))
+|#
 
 #|
 (define intersectall
@@ -56,12 +68,11 @@
 (define intersectall
   (lambda (lset)
     (letrec
-        [(A
-          (lambda (lset)
-            (cond
-              [(null? (cdr lset)) (car lset)]
-              [else (intersect (car lset)
-                               (A (cdr lset)))])))]
+        [(A (lambda (lset)
+              (cond
+                [(null? (cdr lset)) (car lset)]
+                [else (intersect (car lset)
+                                 (A (cdr lset)))])))]
       (cond
         [(null? lset) '()]
         [else (A lset)]))))
@@ -77,8 +88,7 @@
                  (cond
                    [(null? (car lset)) (hop '())]
                    [(null? (cdr lset)) (car lset)]
-                   [else (intersect (car lset)
-                                    (A (cdr lset)))])))]
+                   [else (intersect (car lset) (A (cdr lset)))])))]
          (cond
            [(null? lset) '()]
            [else (A lset)]))))))
@@ -93,8 +103,7 @@
                 (cond
                   [(null? (car lset)) (hop '())]
                   [(null? (cdr lset)) (car lset)]
-                  [else (intersect (car lset)
-                                   (A (cdr lset)))])))]
+                  [else (intersect (car lset) (A (cdr lset)))])))]
         (cond
           [(null? lset) '()]
           [else (A lset)])))))
@@ -109,21 +118,21 @@
                   [(null? (car lset)) (hop '())]
                   [(null? (cdr lset)) (car lset)]
                   [else (I (car lset) (A (cdr lset)))])))
-           (I (lambda (s1 s2)
+           (I (lambda (set1 set2)
                 (letrec
-                    [(J (lambda (s1)
+                    [(J (lambda (set)
                           (cond
-                            [(null? s1) '()]
-                            [(member? (car s1) s2)
-                             (cons (car s1) (J (cdr s1)))]
-                            [else (J (cdr s1))])))]
+                            [(null? set) '()]
+                            [(member? (car set) set2)
+                             (cons (car set) (J (cdr set)))]
+                            [else (J (cdr set))])))]
                   (cond
-                    [(null? s2) (hop '())]
-                    [else (J s1)]))))]
+                    [(null? set2) (hop '())]
+                    [else (J set1)]))))]
         (cond
           [(null? lset) '()]
           [else (A lset)])))))
-
+                
 (intersectall '((3 mangos and)
                 (3 kiwis and)
                 (3 hamburgers)))
@@ -145,9 +154,19 @@
               (cond
                 [(null? lat) '()]
                 [(eq? (car lat) a) (cdr lat)]
-                [else (cons (car lat)
-                            (R (cdr lat)))])))]
+                [else (cons (car lat) (R (cdr lat)))])))]
       (R lat))))
+
+
+#|
+(define rember-beyond-first
+  (lambda (a lat)
+    (cond
+      [(null? lat) '()]
+      [(eq? (car lat) a) '()]
+      [else (cons (car lat)
+                  (rember-beyond-first a (cdr lat)))])))
+|#
 
 (define rember-beyond-first
   (lambda (a lat)
@@ -204,10 +223,8 @@
           [(R (lambda (lat)
                 (cond
                   [(null? lat) '()]
-                  [(eq? (car lat) a)
-                   (skip (R (cdr lat)))]
-                  [else (cons (car lat)
-                              (R (cdr lat)))])))]
+                  [(eq? (car lat) a) (skip (R (cdr lat)))]
+                  [else (cons (car lat) (R (cdr lat)))])))]
         (R lat)))))
 
 (rember-upto-last 'roots
